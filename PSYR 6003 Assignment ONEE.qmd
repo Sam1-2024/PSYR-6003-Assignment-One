@@ -1,0 +1,64 @@
+---
+title: "PSYR 6003 Assignment ONEE"
+format: html
+editor: visual
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+# importing csv file called avengers
+avengers <- read_csv("avengers.csv") 
+View(avengers)
+#total number of missing data
+sum(is.na(avengers)) 
+colSums(is.na(avengers))
+rowSums(is.na(avengers))
+# subset data with only complete cases,no missing data
+clean_avengers <- na.omit(avengers)
+view(clean_avengers)
+# new data called clean avengers1 with complete cases containing a new custom variable called combatEffectiveness which consist of the sum of agility,speed,strength and willpower.
+clean_avengers1 <- mutate(clean_avengers, combatEffectiveness=(agility+speed+strength+willpower))
+view(clean_avengers1)
+#creating a new dataset called clean avengers2 that only includes the avengers who did not have a superpower and have died.
+clean_avengers2 <- filter(clean_avengers1,superpower=="no"& died=="yes")  
+view(clean_avengers2)
+install.packages("haven")
+library(haven)
+#Creating a new copy of the clean avengers2 in csv formats.  
+write.csv(clean_avengers2,"clean_avengers2.csv",row.names=FALSE,na="")
+#Creating a new copy of the clean avengers2 in SPSS formats.
+write_sav(clean_avengers2,"clean_avengers2.sav") 
+#summarizing clean avengers2 to understand the properties of combat effectiveness, kills, and injuries including the mean,SD and range of values for the overall sample
+Summary_stats1 <- clean_avengers2%>% summarize( combatEffectiveness_Mean = mean(combatEffectiveness, na.rm = TRUE), combatEffectiveness_SD = sd(combatEffectiveness, na.rm = TRUE), combatEffectiveness_Min = min(combatEffectiveness, na.rm = TRUE), combatEffectiveness_Max = max(combatEffectiveness, na.rm = TRUE), combatEffectiveness_Range = max(combatEffectiveness, na.rm = TRUE) - min(combatEffectiveness, na.rm = TRUE), kills_Mean = mean(kills, na.rm = TRUE), kills_SD = sd(kills, na.rm = TRUE), kills_Min = min(kills, na.rm = TRUE), kills_Max = max(kills, na.rm = TRUE), kills_Range = max(kills, na.rm = TRUE) - min(kills, na.rm = TRUE), injuries_Mean = mean(injuries, na.rm = TRUE), injuries_SD = sd(injuries, na.rm = TRUE), injuries_Min = min(injuries, na.rm = TRUE), injuries_Max = max(injuries, na.rm = TRUE), injuries_Range = max(injuries, na.rm = TRUE) - min(injuries, na.rm = TRUE) ) 
+view(Summary_stats1 )
+#summarizing clean avengers2 to understand the properties of combat effectiveness, kills, and injuries including the mean,SD and range of values based on battlefield location(north vs.south)
+Summary_stats2 <- clean_avengers2 %>% group_by(north_south) %>% summarize( combatEffectiveness_Mean = mean(combatEffectiveness, na.rm = TRUE), combatEffectiveness_SD = sd(combatEffectiveness, na.rm = TRUE), combatEffectiveness_Min = min(combatEffectiveness, na.rm = TRUE), combatEffectiveness_Max = max(combatEffectiveness, na.rm = TRUE), combatEffectiveness_Range = max(combatEffectiveness, na.rm = TRUE) - min(combatEffectiveness, na.rm = TRUE), kills_Mean = mean(kills, na.rm = TRUE), kills_SD = sd(kills, na.rm = TRUE), kills_Min = min(kills, na.rm = TRUE), kills_Max = max(kills, na.rm = TRUE), kills_Range = max(kills, na.rm = TRUE) - min(kills, na.rm = TRUE), injuries_Mean = mean(injuries, na.rm = TRUE), injuries_SD = sd(injuries, na.rm = TRUE), injuries_Min = min(injuries, na.rm = TRUE), injuries_Max = max(injuries, na.rm = TRUE), injuries_Range = max(injuries, na.rm = TRUE) - min(injuries, na.rm = TRUE) ) 
+view(Summary_stats2)
+#Creating a new summary stats table called summary_stats3 that will show battlefield most effective in combat and battlefield with the most injuries.
+summary_Stats3 <- clean_avengers2 %>% group_by(north_south) %>% summarize( combatEffectiveness_Mean = mean(combatEffectiveness, na.rm = TRUE), injuries_Mean = mean(injuries, na.rm = TRUE) )
+view(summary_Stats3 )
+#Creating a new summary stats table called summary_stats4 to analyze the error in the mean model for the variables combat effectiveness, kills, and injuries.
+Summary_stats4 <- clean_avengers2 %>% summarize( combatEffectiveness_Mean = mean(combatEffectiveness, na.rm = TRUE), combatEffectiveness_SD = sd(combatEffectiveness, na.rm = TRUE), combatEffectiveness_CV = sd(combatEffectiveness, na.rm = TRUE) / mean(combatEffectiveness, na.rm = TRUE), kills_Mean = mean(kills, na.rm = TRUE), kills_SD = sd(kills, na.rm = TRUE), kills_CV = sd(kills, na.rm = TRUE) / mean(kills, na.rm = TRUE), injuries_Mean = mean(injuries, na.rm = TRUE), injuries_SD = sd(injuries, na.rm = TRUE), injuries_CV = sd(injuries, na.rm = TRUE) / mean(injuries, na.rm = TRUE) ) 
+view(Summary_stats4)
+library(pwr)
+#Calculating power for a chosen estimate target effect size
+power_result1 <- pwr.t.test(d = 0.2, sig.level = 0.05, n = 406, type = "two.sample") 
+view(power_result1)
+library(TOSTER)
+#calculating the sample size required needed to achieve zero effect between two groups
+powerTOSTtwo(alpha=0.05, statistical_power=0.8, low_eqbound_d=-0.2, high_eqbound_d=0.2)
+# power calculation to show there is enough power to confirm if there is truely no difference between the groups.
+power_result2 <- pwr.t.test(d = 0.2, sig.level = 0.05, n = 429-1, type = "two.sample")
+view(power_result2)
+library(effectsize)
+#Given test statistics
+test_stat <- 4.25
+# Calculating the effect size and 95% confidence Interval of the effect
+t_to_d(4.25, df_error = 812, paired = FALSE)
+#give the effect a qualitative label
+cohen.ES(test = "t", size = "small")
+cohen.ES(test = "t", size = "medium")
+cohen.ES(test = "t", size = "large")
+
+```
